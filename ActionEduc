@@ -1,0 +1,474 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#153d63">
+<title>EduGest Primaire</title>
+<style>
+:root {
+  --navy:#153d63;
+  --blue:#1769aa;
+  --bg:#f2f5f9;
+  --line:#dce4ec;
+  --ink:#243447;
+  --muted:#64748b;
+  --green:#147d4b;
+  --red:#b83232;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px Arial,sans-serif}
+header{background:var(--navy);color:white;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:21px;margin:0}
+header small{opacity:.85}
+button{border:0;border-radius:7px;padding:10px 13px;background:var(--blue);color:white;cursor:pointer}
+button.secondary{background:#64748b}
+button.danger{background:var(--red)}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:7px;margin:5px 0 12px;background:white;color:var(--ink)}
+label{font-weight:bold;font-size:13px}
+.layout{display:flex;min-height:calc(100vh - 58px)}
+aside{width:225px;background:white;border-right:1px solid var(--line);padding:10px}
+aside button{display:block;width:100%;text-align:left;background:white;color:var(--ink);margin:2px 0}
+aside button.active,aside button:hover{background:#e8f1fa;color:var(--navy)}
+main{padding:18px;min-width:0;flex:1}
+.page{display:none}
+.page.active{display:block}
+h2{color:var(--navy);margin-top:0}
+h3{color:var(--navy)}
+.card{background:white;border:1px solid var(--line);border-radius:10px;padding:15px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.stat strong{display:block;font-size:27px;color:var(--blue)}
+.stat span{color:var(--muted);font-size:13px}
+.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.tablewrap{overflow:auto;margin:12px 0}
+table{border-collapse:collapse;width:100%;background:white;font-size:13px}
+td,th{padding:9px;border:1px solid var(--line);text-align:left}
+th{background:#eaf1f8;color:var(--navy)}
+.notice{background:#fff5d9;border-left:4px solid #d39b18;padding:11px;border-radius:5px;font-size:13px;margin:10px 0}
+.hidden{display:none!important}
+.login{max-width:440px;margin:35px auto;background:white;padding:22px;border-radius:12px;box-shadow:0 3px 16px #0001}
+.muted{color:var(--muted);font-size:13px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:720px){
+.layout{display:block}
+aside{width:100%;display:flex;overflow:auto;border:0;border-bottom:1px solid var(--line);padding:6px}
+aside button{width:auto;white-space:nowrap;flex:none}
+main{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<header>
+<div>
+<h1>🎓 EduGest Primaire</h1>
+<small>Maternelle et primaire · Gestion scolaire</small>
+</div>
+<div id="sessionLabel">Mode local de démonstration</div>
+</header>
+
+<section id="login" class="login">
+<h2>Accès à EduGest Primaire</h2>
+<p class="muted">Choisissez un profil pour explorer les modules.</p>
+<label>Profil</label>
+<select id="role">
+<option>Promoteur</option>
+<option>Directeur</option>
+<option>Secrétaire</option>
+<option>Enseignant</option>
+<option>Parent</option>
+</select>
+<label>Nom affiché</label>
+<input id="displayName" placeholder="Votre nom">
+<button onclick="enterApp()" style="width:100%">Ouvrir mon espace</button>
+<div class="notice">Prototype local : le choix du profil ne constitue pas une authentification sécurisée.</div>
+</section>
+
+<div id="app" class="layout hidden">
+<aside id="nav">
+<button data-page="dashboard" onclick="showPage('dashboard')">🏠 Tableau de bord</button>
+<button data-page="inscriptions" onclick="showPage('inscriptions')">📝 Inscriptions</button>
+<button data-page="eleves" onclick="showPage('eleves')">👨‍🎓 Élèves</button>
+<button data-page="notes" onclick="showPage('notes')">📚 Notes</button>
+<button data-page="bulletins" onclick="showPage('bulletins')">📄 Bulletins</button>
+<button data-page="presences" onclick="showPage('presences')">📅 Présences</button>
+<button data-page="emploi" onclick="showPage('emploi')">🕒 Emplois du temps</button>
+<button data-page="messages" onclick="showPage('messages')">💬 Messages</button>
+<button data-page="personnel" onclick="showPage('personnel')">👩‍🏫 Personnel</button>
+<button data-page="finances" onclick="showPage('finances')">💰 Finances</button>
+<button data-page="parametres" onclick="showPage('parametres')">⚙️ Paramètres</button>
+<button class="danger" onclick="leaveApp()">Quitter</button>
+</aside>
+
+<main>
+
+<section id="dashboard" class="page active">
+<h2>Tableau de bord</h2>
+<div class="grid">
+<div class="card stat"><strong id="nStudents">0</strong><span>Élèves enregistrés</span></div>
+<div class="card stat"><strong id="nStaff">0</strong><span>Membres du personnel</span></div>
+<div class="card stat"><strong>8</strong><span>Classes disponibles</span></div>
+<div class="card stat"><strong id="nPayments">0</strong><span>Paiements saisis</span></div>
+</div>
+<div class="card">
+<h3 id="schoolTitle">Établissement scolaire</h3>
+<p>Année active : <b id="yearDisplay">2026-2027</b></p>
+</div>
+</section>
+
+<section id="inscriptions" class="page">
+<h2>Inscriptions</h2>
+<div class="card">
+<h3>Nouvelle inscription</h3>
+<p>Ajoutez un élève dans le module Élèves.</p>
+<button onclick="showPage('eleves')">Ouvrir le formulaire élève</button>
+</div>
+</section>
+
+<section id="eleves" class="page">
+<h2>Gestion des élèves</h2>
+<div class="card">
+<h3>Ajouter un élève</h3>
+<div class="formgrid">
+<div><label>Nom</label><input id="last"></div>
+<div><label>Prénom</label><input id="first"></div>
+<div><label>Matricule</label><input id="matricule" placeholder="Automatique si vide"></div>
+<div><label>Classe</label><select id="className"></select></div>
+<div><label>Année scolaire</label><input id="studentYear" value="2026-2027"></div>
+<div><label>Contact parent</label><input id="parentPhone"></div>
+<div><label>Date de naissance</label><input id="birth" type="date"></div>
+</div>
+<button onclick="addStudent()">Enregistrer l'élève</button>
+</div>
+<input id="searchStudent" placeholder="Rechercher un élève" oninput="renderStudents()">
+<div class="tablewrap">
+<table>
+<thead><tr><th>Matricule</th><th>Élève</th><th>Classe</th><th>Année</th><th>Parent</th><th>Action</th></tr></thead>
+<tbody id="studentsTable"></tbody>
+</table>
+</div>
+</section>
+
+<section id="notes" class="page">
+<h2>Notes et évaluations</h2>
+<div class="card">
+<p>Primaire : CM sur 18 et CP sur 2. Cinq évaluations au maximum par matière.</p>
+<div class="formgrid">
+<div><label>Élève</label><select id="gradeStudent"></select></div>
+<div><label>Matière</label><select id="subject"></select></div>
+<div><label>Évaluation</label><select id="test"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+<div><label>CM /18</label><input id="cm" type="number" min="0" max="18" step=".5"></div>
+<div><label>CP /2</label><input id="cp" type="number" min="0" max="2" step=".5"></div>
+</div>
+<button onclick="addGrade()">Enregistrer la note</button>
+<p class="muted">En CP, si CM est inférieur à 10, CP est ramené à zéro.</p>
+</div>
+<div class="tablewrap">
+<table>
+<thead><tr><th>Élève</th><th>Matière</th><th>Éval.</th><th>CM</th><th>CP</th><th>Total</th></tr></thead>
+<tbody id="gradesTable"></tbody>
+</table>
+</div>
+</section>
+
+<section id="bulletins" class="page">
+<h2>Bulletins</h2>
+<div class="card">
+<h3>Bulletin primaire</h3>
+<label>Élève</label><select id="reportStudent"></select>
+<button onclick="makeReport()">Calculer le bulletin</button>
+<div id="report"></div>
+</div>
+<div class="card">
+<h3>Bulletin maternelle</h3>
+<p>😊 TS — Très satisfaisant</p>
+<p>😐 S — Satisfaisant</p>
+<p>☹️ PS — Peu satisfaisant</p>
+<p>Domaines paramétrables par année scolaire, observations et visas de l'enseignant et du directeur.</p>
+</div>
+</section>
+
+<section id="presences" class="page">
+<h2>Présences et absences</h2>
+<div class="card">
+<div class="formgrid">
+<div><label>Élève</label><select id="attendanceStudent"></select></div>
+<div><label>Date</label><input id="attendanceDate" type="date"></div>
+<div><label>Statut</label><select id="attendanceStatus"><option>Présent</option><option>Absent</option><option>En retard</option></select></div>
+</div>
+<button onclick="addAttendance()">Enregistrer</button>
+</div>
+<div class="tablewrap">
+<table><thead><tr><th>Élève</th><th>Date</th><th>Statut</th></tr></thead><tbody id="attendanceTable"></tbody></table>
+</div>
+</section>
+
+<section id="emploi" class="page">
+<h2>Emplois du temps</h2>
+<div class="card">
+<label>Classe</label><select id="scheduleClass"></select>
+<label>Jour</label>
+<select id="day"><option>Lundi</option><option>Mardi</option><option>Mercredi</option><option>Jeudi</option><option>Vendredi</option><option>Samedi</option></select>
+<div class="formgrid">
+<div><label>Horaire</label><input id="slot" placeholder="08h00–09h00"></div>
+<div><label>Discipline / domaine</label><input id="discipline"></div>
+</div>
+<button onclick="addSchedule()">Ajouter la plage</button>
+<label>Ou choisir une image JPG/PNG</label>
+<input id="scheduleFile" type="file" accept="image/png,image/jpeg" onchange="previewSchedule()">
+<div id="schedulePreview"></div>
+<div id="scheduleTable"></div>
+</div>
+</section>
+
+<section id="messages" class="page">
+<h2>Messagerie</h2>
+<div class="card">
+<label>Destinataire</label>
+<select id="recipient"><option>Toute l'école</option><option>Une classe</option><option>Un parent</option></select>
+<label>Modèle</label>
+<select id="template">
+<option>Rappel de paiement</option>
+<option>Convocation</option>
+<option>Réunion des parents</option>
+<option>Absence de l'élève</option>
+</select>
+<label>Message</label><textarea id="messageBody" rows="4"></textarea>
+<button onclick="prepareMessage()">Préparer le message</button>
+<p id="messageStatus" class="muted"></p>
+</div>
+</section>
+
+<section id="personnel" class="page">
+<h2>Ressources humaines</h2>
+<div class="card">
+<div class="formgrid">
+<div><label>Nom complet</label><input id="staffName"></div>
+<div><label>Fonction</label><select id="staffRole"><option>Promoteur</option><option>Directeur</option><option>Secrétaire</option><option>Enseignant</option></select></div>
+<div><label>Contact</label><input id="staffContact"></div>
+<div><label>Année scolaire</label><input id="staffYear" value="2026-2027"></div>
+</div>
+<button onclick="addStaff()">Ajouter le membre</button>
+</div>
+<div class="tablewrap">
+<table><thead><tr><th>Nom</th><th>Fonction</th><th>Contact</th><th>Année</th></tr></thead><tbody id="staffTable"></tbody></table>
+</div>
+</section>
+
+<section id="finances" class="page">
+<h2>Finances et frais scolaires</h2>
+<div class="card">
+<div class="formgrid">
+<div><label>Élève</label><select id="paymentStudent"></select></div>
+<div><label>Montant dû</label><input id="due" type="number" min="0"></div>
+<div><label>Montant payé</label><input id="paid" type="number" min="0"></div>
+<div><label>Date</label><input id="paymentDate" type="date"></div>
+<div><label>Mode</label><select id="method"><option>Espèces</option><option>Virement</option><option>Mobile Money</option><option>Autre</option></select></div>
+</div>
+<button onclick="addPayment()">Enregistrer le paiement local</button>
+<p class="notice">Aucun paiement en ligne réel n'est effectué.</p>
+</div>
+<div class="tablewrap">
+<table><thead><tr><th>Élève</th><th>Dû</th><th>Payé</th><th>Solde</th><th>Date</th><th>Reçu</th></tr></thead><tbody id="paymentsTable"></tbody></table>
+</div>
+</section>
+
+<section id="parametres" class="page">
+<h2>Paramètres</h2>
+<div class="card">
+<div class="formgrid">
+<div><label>Nom de l'école</label><input id="schoolName"></div>
+<div><label>Adresse</label><input id="schoolAddress"></div>
+<div><label>Téléphone</label><input id="schoolPhone"></div>
+<div><label>Année scolaire active</label><input id="activeYear" value="2026-2027"></div>
+</div>
+<button onclick="saveSettings()">Enregistrer</button>
+</div>
+<div class="card">
+<h3>Matières du primaire</h3>
+<ol id="subjectsList"></ol>
+<h3>Règles d'appréciation</h3>
+<p>9 matières : redressement.</p>
+<p>8 : Travail très satisfaisant.</p>
+<p>7 : Travail satisfaisant, peut mieux faire.</p>
+<p>6 : Travail moyen, doit redoubler d'effort.</p>
+<p>3 à 5 : Travail insuffisant, passez voir le Directeur.</p>
+<p>Seuil atteint à partir de 6 matières réussies sur 9.</p>
+</div>
+<div class="card">
+<h3>Domaines de maternelle</h3>
+<label>Année scolaire</label><input id="domainYear" value="2026-2027">
+<label>Domaines (un par ligne)</label><textarea id="domains" rows="4"></textarea>
+<button onclick="saveDomains()">Enregistrer les domaines</button>
+</div>
+<div class="card">
+<button onclick="exportData()">Exporter les données locales JSON</button>
+<button class="danger" onclick="clearData()">Effacer les données locales</button>
+</div>
+</section>
+</main>
+</div>
+
+<footer>EduGest Primaire · Prototype local</footer>
+
+<script>
+const CLASSES=["Section 1","Section 2","CI","CP","CE1","CE2","CM1","CM2"];
+const SUBJECTS=[
+"Expression écrite","Lecture","Dictée","Mathématiques",
+"ES","EST","EA poésie, chant, conte","EA dessin ou couture","EPS"
+];
+const ACCESS={
+"Promoteur":["dashboard","inscriptions","eleves","notes","bulletins","presences","emploi","messages","personnel","finances","parametres"],
+"Directeur":["dashboard","inscriptions","eleves","notes","bulletins","presences","emploi","messages","personnel","finances","parametres"],
+"Secrétaire":["dashboard","inscriptions","eleves","emploi","messages","finances"],
+"Enseignant":["dashboard","eleves","notes","bulletins","presences","emploi"],
+"Parent":["dashboard","bulletins","emploi","finances","messages"]
+};
+function read(k){try{return JSON.parse(localStorage.getItem("egp_"+k))??(k==="settings"?{}:[])}catch(e){return k==="settings"?{}:[]}}
+let currentRole="",db={
+students:read("students"),grades:read("grades"),attendance:read("attendance"),
+staff:read("staff"),payments:read("payments"),schedules:read("schedules"),
+settings:read("settings"),domains:read("domains")
+};
+function persist(k){localStorage.setItem("egp_"+k,JSON.stringify(db[k]))}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function fillSelect(id,items){const e=document.getElementById(id);if(e)e.innerHTML=items.map(x=>`<option value="${esc(x.value??x)}">${esc(x.label??x)}</option>`).join("")}
+function enterApp(){
+currentRole=document.getElementById("role").value;
+document.getElementById("login").classList.add("hidden");
+document.getElementById("app").classList.remove("hidden");
+document.getElementById("sessionLabel").textContent=(document.getElementById("displayName").value||currentRole)+" · "+currentRole;
+document.querySelectorAll("#nav [data-page]").forEach(b=>b.classList.toggle("hidden",!ACCESS[currentRole].includes(b.dataset.page)));
+refresh();showPage("dashboard")
+}
+function leaveApp(){currentRole="";document.getElementById("app").classList.add("hidden");document.getElementById("login").classList.remove("hidden")}
+function showPage(id){
+if(!ACCESS[currentRole]?.includes(id)){alert("Accès non autorisé.");return}
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+document.querySelectorAll("#nav [data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+refresh()
+}
+function requireRoles(...r){if(!r.includes(currentRole)){alert("Action non autorisée.");return false}return true}
+function addStudent(){
+if(!requireRoles("Promoteur","Directeur","Secrétaire"))return;
+let last=document.getElementById("last").value.trim(),first=document.getElementById("first").value.trim();
+if(!last||!first){alert("Nom et prénom obligatoires.");return}
+db.students.push({id:Date.now(),last,first,code:document.getElementById("matricule").value.trim()||"EGP-"+Date.now(),cls:document.getElementById("className").value,year:document.getElementById("studentYear").value,parent:document.getElementById("parentPhone").value,birth:document.getElementById("birth").value});
+persist("students");["last","first","matricule","parentPhone","birth"].forEach(i=>document.getElementById(i).value="");refresh()
+}
+function renderStudents(){
+let q=(document.getElementById("searchStudent")?.value||"").toLowerCase();
+document.getElementById("studentsTable").innerHTML=db.students.filter(s=>(s.last+" "+s.first+" "+s.code).toLowerCase().includes(q)).map(s=>`<tr><td>${esc(s.code)}</td><td>${esc(s.last)} ${esc(s.first)}</td><td>${esc(s.cls)}</td><td>${esc(s.year)}</td><td>${esc(s.parent)}</td><td><button class="danger" onclick="deleteStudent(${s.id})">Supprimer</button></td></tr>`).join("")
+}
+function deleteStudent(id){
+if(!requireRoles("Promoteur","Directeur"))return;
+if(confirm("Supprimer cet élève ?")){db.students=db.students.filter(s=>s.id!==id);persist("students");refresh()}
+}
+function refresh(){
+["className","scheduleClass"].forEach(id=>fillSelect(id,CLASSES));
+fillSelect("subject",SUBJECTS);
+["gradeStudent","reportStudent","attendanceStudent","paymentStudent"].forEach(id=>fillSelect(id,db.students.map(s=>({value:s.id,label:s.last+" "+s.first+" · "+s.cls}))));
+renderStudents();
+document.getElementById("nStudents").textContent=db.students.length;
+document.getElementById("nStaff").textContent=db.staff.length;
+document.getElementById("nPayments").textContent=db.payments.length;
+document.getElementById("gradesTable").innerHTML=db.grades.map(g=>{let s=db.students.find(x=>x.id===g.sid);return `<tr><td>${s?esc(s.last+" "+s.first):"Élève supprimé"}</td><td>${esc(g.subject)}</td><td>${g.test}</td><td>${g.cm}/18</td><td>${g.cp}/2</td><td>${g.total}/20</td></tr>`}).join("");
+document.getElementById("attendanceTable").innerHTML=db.attendance.map(a=>`<tr><td>${esc(a.name)}</td><td>${esc(a.date)}</td><td>${esc(a.status)}</td></tr>`).join("");
+document.getElementById("staffTable").innerHTML=db.staff.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.role)}</td><td>${esc(s.contact)}</td><td>${esc(s.year)}</td></tr>`).join("");
+document.getElementById("paymentsTable").innerHTML=db.payments.map((p,i)=>`<tr><td>${esc(p.name)}</td><td>${p.due}</td><td>${p.paid}</td><td>${p.due-p.paid}</td><td>${esc(p.date)}</td><td><button onclick="receipt(${i})">Imprimer</button></td></tr>`).join("");
+document.getElementById("subjectsList").innerHTML=SUBJECTS.map(s=>`<li>${esc(s)}</li>`).join("");
+document.getElementById("schoolTitle").textContent=db.settings.name||"Établissement scolaire";
+document.getElementById("yearDisplay").textContent=db.settings.year||"2026-2027";
+document.getElementById("schoolName").value=db.settings.name||"";
+document.getElementById("schoolAddress").value=db.settings.address||"";
+document.getElementById("schoolPhone").value=db.settings.phone||"";
+document.getElementById("activeYear").value=db.settings.year||"2026-2027";
+renderSchedules()
+}
+function addGrade(){
+if(!requireRoles("Promoteur","Directeur","Enseignant"))return;
+let sid=Number(document.getElementById("gradeStudent").value),s=db.students.find(x=>x.id===sid),cm=Number(document.getElementById("cm").value),cp=Number(document.getElementById("cp").value);
+if(!s){alert("Ajoutez d'abord un élève.");return}
+if(!Number.isFinite(cm)||cm<0||cm>18||!Number.isFinite(cp)||cp<0||cp>2){alert("CM : 0 à 18 ; CP : 0 à 2.");return}
+if(s.cls==="CP"&&cm<10)cp=0;
+let subject=document.getElementById("subject").value,test=Number(document.getElementById("test").value);
+if(db.grades.some(g=>g.sid===sid&&g.subject===subject&&g.test===test)){alert("Évaluation déjà saisie.");return}
+db.grades.push({sid,subject,test,cm,cp,total:cm+cp});persist("grades");refresh()
+}
+function makeReport(){
+let sid=Number(document.getElementById("reportStudent").value),s=db.students.find(x=>x.id===sid);
+if(!s){alert("Aucun élève sélectionné.");return}
+let rows=SUBJECTS.map(subject=>{let a=db.grades.filter(g=>g.sid===sid&&g.subject===subject),avg=a.length?a.reduce((t,g)=>t+g.total,0)/a.length:0;return {subject,avg}});
+let passed=rows.filter(x=>x.avg>=10).length,avg=rows.reduce((t,x)=>t+x.avg,0)/9;
+let app=passed===9?"Redressement":passed===8?"Travail très satisfaisant":passed===7?"Travail satisfaisant, peut mieux faire":passed===6?"Travail moyen, doit redoubler d'effort":passed>=3?"Travail insuffisant, passez voir le Directeur":"";
+document.getElementById("report").innerHTML=`<div class="card"><h3>Bulletin — ${esc(s.last)} ${esc(s.first)}</h3><p>Classe : ${esc(s.cls)} · Année : ${esc(s.year)}</p><p>Moyenne : <b>${avg.toFixed(2)}/20</b> · Matières réussies : ${passed}/9</p><p>Seuil : <b>${passed>=6?"Atteint":"Non atteint"}</b></p><p>Appréciation : ${esc(app)}</p><div class="tablewrap"><table><tr><th>Matière</th><th>Moyenne</th></tr>${rows.map(x=>`<tr><td>${esc(x.subject)}</td><td>${x.avg.toFixed(2)}/20</td></tr>`).join("")}</table></div><p>Signature enseignant : ____________________ &nbsp; Visa directeur : ____________________</p><button onclick="window.print()">Imprimer</button></div>`
+}
+function addAttendance(){
+if(!requireRoles("Promoteur","Directeur","Enseignant"))return;
+let s=db.students.find(x=>x.id===Number(document.getElementById("attendanceStudent").value));
+if(!s){alert("Aucun élève.");return}
+db.attendance.push({name:s.last+" "+s.first,date:document.getElementById("attendanceDate").value,status:document.getElementById("attendanceStatus").value});persist("attendance");refresh()
+}
+function addStaff(){
+if(!requireRoles("Promoteur","Directeur"))return;
+let name=document.getElementById("staffName").value.trim();if(!name)return alert("Nom obligatoire.");
+db.staff.push({name,role:document.getElementById("staffRole").value,contact:document.getElementById("staffContact").value,year:document.getElementById("staffYear").value});persist("staff");refresh()
+}
+function addPayment(){
+if(!requireRoles("Promoteur","Directeur","Secrétaire"))return;
+let s=db.students.find(x=>x.id===Number(document.getElementById("paymentStudent").value)),due=Number(document.getElementById("due").value),paid=Number(document.getElementById("paid").value);
+if(!s||due<0||paid<0||paid>due)return alert("Vérifiez l'élève et les montants.");
+db.payments.push({name:s.last+" "+s.first,due,paid,date:document.getElementById("paymentDate").value,method:document.getElementById("method").value});persist("payments");refresh()
+}
+function receipt(i){
+let p=db.payments[i],w=window.open("","_blank");if(!w)return alert("Autorisez les fenêtres d'impression.");
+w.document.write(`<h2>Reçu de paiement — EduGest Primaire</h2><p>Élève : ${esc(p.name)}</p><p>Dû : ${p.due}</p><p>Payé : ${p.paid}</p><p>Solde : ${p.due-p.paid}</p><p>Date : ${esc(p.date)}</p><p>Mode : ${esc(p.method)}</p>`);w.document.close();w.print()
+}
+function addSchedule(){
+if(!requireRoles("Promoteur","Directeur"))return;
+let item={cls:document.getElementById("scheduleClass").value,day:document.getElementById("day").value,slot:document.getElementById("slot").value,discipline:document.getElementById("discipline").value};
+if(!item.slot||!item.discipline)return alert("Saisissez l'horaire et la discipline.");
+db.schedules.push(item);persist("schedules");renderSchedules()
+}
+function renderSchedules(){
+let el=document.getElementById("scheduleTable");if(el)el.innerHTML="<div class='tablewrap'><table><tr><th>Classe</th><th>Jour</th><th>Horaire</th><th>Discipline</th></tr>"+db.schedules.map(x=>`<tr><td>${esc(x.cls)}</td><td>${esc(x.day)}</td><td>${esc(x.slot)}</td><td>${esc(x.discipline)}</td></tr>`).join("")+"</table></div>"
+}
+function previewSchedule(){
+let f=document.getElementById("scheduleFile").files[0],el=document.getElementById("schedulePreview");if(!f)return;
+let u=URL.createObjectURL(f);el.innerHTML=`<img src="${u}" alt="Aperçu emploi du temps" style="max-width:100%;max-height:320px">`
+}
+function prepareMessage(){
+if(!requireRoles("Promoteur","Directeur","Secrétaire"))return;
+let body=document.getElementById("messageBody").value.trim();if(!body)return alert("Saisissez le texte du message.");
+document.getElementById("messageStatus").textContent="Message préparé localement ; il n'a pas été envoyé."
+}
+function saveSettings(){
+if(!requireRoles("Promoteur","Directeur"))return;
+db.settings={name:document.getElementById("schoolName").value,address:document.getElementById("schoolAddress").value,phone:document.getElementById("schoolPhone").value,year:document.getElementById("activeYear").value};
+persist("settings");refresh();alert("Paramètres enregistrés sur cet appareil.")
+}
+function saveDomains(){
+if(!requireRoles("Promoteur","Directeur"))return;
+let year=document.getElementById("domainYear").value;
+db.domains=db.domains.filter(x=>x.year!==year);
+db.domains.push({year,items:document.getElementById("domains").value.split("\n").map(x=>x.trim()).filter(Boolean)});
+persist("domains");alert("Domaines enregistrés localement.")
+}
+function exportData(){
+let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");
+a.href=URL.createObjectURL(blob);a.download="edugest-sauvegarde.json";a.click();URL.revokeObjectURL(a.href)
+}
+function clearData(){
+if(!requireRoles("Promoteur"))return;
+if(confirm("Effacer toutes les données locales ?")){
+Object.keys(db).forEach(k=>{db[k]=k==="settings"?{}:[];persist(k)});refresh()
+}
+}
+fillSelect("className",CLASSES);
+fillSelect("scheduleClass",CLASSES);
+fillSelect("subject",SUBJECTS);
+</script>
+</body>
+</html>
